@@ -1,0 +1,10 @@
+/table
+/table.dSYM/
+
+*.o
+*.a
+*.so
+*.dylib
+*.dSYM
+
+.DS_Store
