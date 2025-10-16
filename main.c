@@ -3,7 +3,7 @@
 int main(void)
 {
     unsigned int num_cols = 3;
-    Table *table = table_init(stdout, FORMAT_CSV, num_cols);
+    Table *table = table_init(stdout, FORMAT_SPACES, BORDER_NONE, num_cols);
     if (!table) return 1;
 
     table_row(table, "foo", "bar", "baz");

@@ -1,10 +1,10 @@
 .PHONY: run
 
-run: table
-	./table
+run: main
+	./main
 
-table: table.c
-	gcc -g -Wall -Wextra -o table table.c
+main: main.c
+	gcc -g -Wall -Wextra -o main main.c
 
 clean:
-	rm -f table
+	rm -f main
