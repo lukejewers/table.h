@@ -8,9 +8,31 @@
 
 #define TABLE_INIT_SIZE 64
 
-static char *__BORDER_SINGLE[] = {"┌", "┬", "┐", "├", "┼", "┤", "└", "┴", "┘", "─", "│", " "};
-static char *__BORDER_DOUBLE[] = {"╔", "╦", "╗", "╠", "╬", "╣", "╚", "╩", "╝", "═", "║", " "};
-static char *__BORDER_ASCII[]  = {"+", "+", "+", "+", "+", "+", "+", "+", "+", "-", "|", " "};
+typedef enum {
+    BORDER_TOP_LEFT,
+    BORDER_TOP_MIDDLE,
+    BORDER_TOP_RIGHT,
+    BORDER_MIDDLE_LEFT,
+    BORDER_MIDDLE_MIDDLE,
+    BORDER_MIDDLE_RIGHT,
+    BORDER_BOTTOM_LEFT,
+    BORDER_BOTTOM_MIDDLE,
+    BORDER_BOTTOM_RIGHT,
+    BORDER_HORIZONTAL,
+    BORDER_VERTICAL,
+    BORDER_COUNT
+} BorderChar;
+
+static char *BORDER_SETS[][BORDER_COUNT] = {
+    // BORDER_SINGLE
+    {"┌", "┬", "┐", "├", "┼", "┤", "└", "┴", "┘", "─", "│"},
+    // BORDER_DOUBLE
+    {"╔", "╦", "╗", "╠", "╬", "╣", "╚", "╩", "╝", "═", "║"},
+    // BORDER_ASCII
+    {"+", "+", "+", "+", "+", "+", "+", "+", "+", "-", "|"},
+    // BORDER_ROUND
+    {"╭", "┬", "╮", "├", "┼", "┤", "╰", "┴", "╯", "─", "│"}
+};
 
 typedef enum {
     FORMAT_CSV,      // Comma-separated values
@@ -19,11 +41,10 @@ typedef enum {
 } OutputFormat;
 
 typedef enum {
-    BORDER_NONE,     // Aligned columns
-    BORDER_SINGLE,   // Light borders: ┌────┐
-    BORDER_DOUBLE,   // Heavy borders: ╔════╗
-    BORDER_ROUND,    // Rounded: ╭────╮
-    BORDER_ASCII,    // Basic: +----+
+    BORDER_SINGLE,   // Single  border: ┌────┐
+    BORDER_DOUBLE,   // Double  border: ╔════╗
+    BORDER_ASCII,    // Ascii   border: +----+
+    BORDER_ROUND,    // Rounded border: ╭────╮
 } BorderStyle;
 
 typedef struct {
@@ -100,6 +121,18 @@ static inline void table_row(Table *table, ...)
     va_end(args);
 }
 
+static inline void calculate_col_widths(const Table *table, unsigned int *col_widths)
+{
+    for (unsigned int col = 0; col < table->num_cols; ++col) {
+        unsigned int max_str_len = 0;
+        for (unsigned int row = 0; row < table->num_rows; ++row) {
+            unsigned int value_len = strlen(table->rows_buffer[row][col]);
+            if (value_len > max_str_len) max_str_len = value_len;
+        }
+        col_widths[col] = max_str_len;
+    }
+}
+
 static inline void table_print_csv(const Table *table)
 {
     if (!table || !table->output_stream) return;
@@ -116,7 +149,56 @@ static inline void table_print_csv(const Table *table)
 static inline void table_print_bordered(const Table *table)
 {
     if (!table || !table->output_stream) return;
-    fprintf(table->output_stream, "TODO: table not yet implemented\n");
+
+    unsigned int col_widths[table->num_cols];
+    calculate_col_widths(table, col_widths);
+    // print top border
+    fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_TOP_LEFT]);
+    for (unsigned int col = 0; col < table->num_cols; ++col) {
+        for (unsigned int i = 0; i < col_widths[col]; ++i) {
+            fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_HORIZONTAL]);
+        }
+        if (col < table->num_cols - 1) fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_TOP_MIDDLE]);
+        else fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_TOP_RIGHT]);
+    }
+    fprintf(table->output_stream, "\n");
+    // print rows with content
+    for (unsigned int row = 0; row < table->num_rows; ++row) {
+        fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_VERTICAL]);
+        for (unsigned int col = 0; col < table->num_cols; ++col) {
+            fprintf(table->output_stream, "%s", table->rows_buffer[row][col]);
+            unsigned int current_len = strlen(table->rows_buffer[row][col]);
+            unsigned int padding = col_widths[col] - current_len;
+            for (unsigned int i = 0; i < padding; ++i) {
+                fprintf(table->output_stream, " ");
+            }
+            if (col < table->num_cols - 1) fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_VERTICAL]);
+            else fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_VERTICAL]);
+        }
+        fprintf(table->output_stream, "\n");
+        // print middle separator after each row (except last)
+        if (row < table->num_rows - 1) {
+            fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_MIDDLE_LEFT]);
+            for (unsigned int col = 0; col < table->num_cols; ++col) {
+                for (unsigned int i = 0; i < col_widths[col]; ++i) {
+                    fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_HORIZONTAL]);
+                }
+                if (col < table->num_cols - 1) fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_MIDDLE_MIDDLE]);
+                else fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_MIDDLE_RIGHT]);
+            }
+            fprintf(table->output_stream, "\n");
+        }
+    }
+    // print bottom border
+    fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_BOTTOM_LEFT]);
+    for (unsigned int col = 0; col < table->num_cols; ++col) {
+        for (unsigned int i = 0; i < col_widths[col]; ++i) {
+            fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_HORIZONTAL]);
+        }
+        if (col < table->num_cols - 1) fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_BOTTOM_MIDDLE]);
+        else fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_BOTTOM_RIGHT]);
+    }
+    fprintf(table->output_stream, "\n");
 }
 
 static inline void table_print_spaces(const Table *table)
@@ -124,15 +206,7 @@ static inline void table_print_spaces(const Table *table)
     if (!table || !table->output_stream) return;
 
     unsigned int col_widths[table->num_cols];
-
-    for (unsigned int col = 0; col < table->num_cols; ++col) {
-        unsigned int max_str_len = 0;
-        for (unsigned int row = 0; row < table->num_rows; ++row) {
-            unsigned int value_len = strlen(table->rows_buffer[row][col]);
-            if (value_len > max_str_len) max_str_len = value_len;
-        }
-        col_widths[col] = max_str_len;
-    }
+    calculate_col_widths(table, col_widths);
 
     for (unsigned int row = 0; row < table->num_rows; ++row) {
         for (unsigned int col = 0; col < table->num_cols; ++col) {
