@@ -45,6 +45,7 @@ typedef enum {
     BORDER_DOUBLE,   // Double  border: ╔════╗
     BORDER_ASCII,    // Ascii   border: +----+
     BORDER_ROUND,    // Rounded border: ╭────╮
+    BORDER_NONE,     // No      border
 } BorderStyle;
 
 typedef struct {

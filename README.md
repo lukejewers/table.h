@@ -1,14 +1,14 @@
 # table.h
 
-A lightweight single-header C library for creating and formatting tabular data in multiple output formats.
+A single-header C library for creating and formatting tabular data in multiple output formats.
 
 ## Features
 
-- Single Header: Just include table.h - no separate compilation needed.
-- Multiple Output Formats: CSV and ASCII table formats
-- Flexible Output: Print to stdout, stderr, or any file stream
-- Easy to Use: Simple API for quick table creation
-- Zero Dependencies: Only requires standard C library
+- Single header: just include table.h - no separate compilation needed.
+- Multiple output formats: CSV and ASCII table formats.
+- Flexible output: print to stdout, stderr, or any file stream.
+- Easy to use: simple API for quick table creation.
+- Zero dependencies: only requires standard C library.
 
 ## Installation
 
@@ -21,7 +21,7 @@ Simply copy table.h into your project and include it:
 Then compile your program normally:
 
 ```console
-gcc -o myapp myapp.c
+gcc -o main main.c
 ```
 
 ## Example Usage
@@ -31,7 +31,7 @@ gcc -o myapp myapp.c
 
 int main() {
     // Create a CSV table with 3 columns
-    Table *table = table_init(stdout, FORMAT_CSV, 3);
+    Table *table = table_init(stdout, FORMAT_CSV, BORDER_NONE, 3);
 
     // Add rows of data
     table_row(table, "Name", "Age", "City");
