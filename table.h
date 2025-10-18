@@ -52,6 +52,7 @@ typedef struct {
     FILE *output_stream;
     OutputFormat output_format;
     BorderStyle border_style;
+    unsigned int cell_padding;
     unsigned int rows_buffer_size;
     char ***rows_buffer;
     unsigned int num_rows;
@@ -91,6 +92,7 @@ static inline Table *table_init(FILE *output_stream, OutputFormat output_format,
     table->output_stream = output_stream;
     table->output_format = output_format;
     table->border_style = border_style;
+    table->cell_padding = 1;
 
     return table;
 }
@@ -156,7 +158,7 @@ static inline void table_print_bordered(const Table *table)
     // print top border
     fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_TOP_LEFT]);
     for (unsigned int col = 0; col < table->num_cols; ++col) {
-        for (unsigned int i = 0; i < col_widths[col]; ++i) {
+        for (unsigned int i = 0; i < col_widths[col] + (table->cell_padding * 2); ++i) {
             fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_HORIZONTAL]);
         }
         if (col < table->num_cols - 1) fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_TOP_MIDDLE]);
@@ -167,10 +169,15 @@ static inline void table_print_bordered(const Table *table)
     for (unsigned int row = 0; row < table->num_rows; ++row) {
         fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_VERTICAL]);
         for (unsigned int col = 0; col < table->num_cols; ++col) {
+            // Left padding
+            for (unsigned int i = 0; i < table->cell_padding; ++i) {
+                fprintf(table->output_stream, " ");
+            }
+            // Cell content
             fprintf(table->output_stream, "%s", table->rows_buffer[row][col]);
-            unsigned int current_len = strlen(table->rows_buffer[row][col]);
-            unsigned int padding = col_widths[col] - current_len;
-            for (unsigned int i = 0; i < padding; ++i) {
+            // Right padding + alignment
+            unsigned int padding = col_widths[col] - strlen(table->rows_buffer[row][col]);
+            for (unsigned int i = 0; i < padding + table->cell_padding; ++i) {
                 fprintf(table->output_stream, " ");
             }
             if (col < table->num_cols - 1) fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_VERTICAL]);
@@ -181,7 +188,7 @@ static inline void table_print_bordered(const Table *table)
         if (row < table->num_rows - 1) {
             fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_MIDDLE_LEFT]);
             for (unsigned int col = 0; col < table->num_cols; ++col) {
-                for (unsigned int i = 0; i < col_widths[col]; ++i) {
+                for (unsigned int i = 0; i < col_widths[col] + (table->cell_padding * 2); ++i) {
                     fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_HORIZONTAL]);
                 }
                 if (col < table->num_cols - 1) fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_MIDDLE_MIDDLE]);
@@ -193,7 +200,7 @@ static inline void table_print_bordered(const Table *table)
     // print bottom border
     fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_BOTTOM_LEFT]);
     for (unsigned int col = 0; col < table->num_cols; ++col) {
-        for (unsigned int i = 0; i < col_widths[col]; ++i) {
+        for (unsigned int i = 0; i < col_widths[col] + (table->cell_padding * 2); ++i) {
             fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_HORIZONTAL]);
         }
         if (col < table->num_cols - 1) fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_BOTTOM_MIDDLE]);
