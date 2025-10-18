@@ -2,6 +2,7 @@
 #define TABLE_H
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,6 +53,7 @@ typedef struct {
     FILE *output_stream;
     OutputFormat output_format;
     BorderStyle border_style;
+    bool even_col_spacing;
     unsigned int cell_padding;
     unsigned int rows_buffer_size;
     char ***rows_buffer;
@@ -93,6 +95,7 @@ static inline Table *table_init(FILE *output_stream, OutputFormat output_format,
     table->output_format = output_format;
     table->border_style = border_style;
     table->cell_padding = 1;
+    table->even_col_spacing = false;
 
     return table;
 }
@@ -126,6 +129,7 @@ static inline void table_row(Table *table, ...)
 
 static inline void calculate_col_widths(const Table *table, unsigned int *col_widths)
 {
+    unsigned int max_col_width = 0;
     for (unsigned int col = 0; col < table->num_cols; ++col) {
         unsigned int max_str_len = 0;
         for (unsigned int row = 0; row < table->num_rows; ++row) {
@@ -133,6 +137,10 @@ static inline void calculate_col_widths(const Table *table, unsigned int *col_wi
             if (value_len > max_str_len) max_str_len = value_len;
         }
         col_widths[col] = max_str_len;
+        if (max_str_len > max_col_width) max_col_width = max_str_len;
+    }
+    if (table->even_col_spacing) {
+        for (unsigned int i = 0; i < table->num_cols; ++i) col_widths[i] = max_col_width;
     }
 }
 
