@@ -101,9 +101,15 @@ static inline Table *table_init(TableConfig config)
 
 static inline void table_row(Table *table, ...)
 {
-    if (!table || table->num_rows >= table->rows_buffer_size) {
-        fprintf(stderr, "Buffer full!\n");
-        return;
+    if (!table) return;
+    if (table->num_rows >= table->rows_buffer_size) {
+        table->rows_buffer_size *= 2;
+        char ***new_buffer = realloc(table->rows_buffer, sizeof(char **) * table->rows_buffer_size);
+        if (!new_buffer) {
+            fprintf(stderr, "Failed to resize table buffer\n");
+            return;
+        }
+        table->rows_buffer = new_buffer;
     }
 
     va_list args;
