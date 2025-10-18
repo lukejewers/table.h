@@ -55,10 +55,14 @@ typedef struct {
     BorderStyle border_style;
     bool even_col_spacing;
     unsigned int cell_padding;
+    unsigned int num_cols;
+} TableConfig;
+
+typedef struct {
+    TableConfig config;
     unsigned int rows_buffer_size;
     char ***rows_buffer;
     unsigned int num_rows;
-    unsigned int num_cols;
 } Table;
 
 static inline void free_table(Table *table)
@@ -73,7 +77,7 @@ static inline void free_table(Table *table)
     free(table);
 }
 
-static inline Table *table_init(FILE *output_stream, OutputFormat output_format, BorderStyle border_style, unsigned int num_cols)
+static inline Table *table_init(TableConfig config)
 {
     Table *table = malloc(sizeof(Table));
     if (table == NULL) {
@@ -90,12 +94,7 @@ static inline Table *table_init(FILE *output_stream, OutputFormat output_format,
     }
 
     table->num_rows = 0;
-    table->num_cols = num_cols;
-    table->output_stream = output_stream;
-    table->output_format = output_format;
-    table->border_style = border_style;
-    table->cell_padding = 1;
-    table->even_col_spacing = false;
+    table->config = config;
 
     return table;
 }
@@ -110,14 +109,14 @@ static inline void table_row(Table *table, ...)
     va_list args;
     va_start(args, table);
 
-    char **new_row = malloc(sizeof(char *) * table->num_cols);
+    char **new_row = malloc(sizeof(char *) * table->config.num_cols);
     if (new_row == NULL) {
         fprintf(stderr, "Failed to allocate row\n");
         va_end(args);
         return;
     }
 
-    for (unsigned int i = 0; i < table->num_cols; i++) {
+    for (unsigned int i = 0; i < table->config.num_cols; i++) {
         new_row[i] = va_arg(args, char *);
     }
 
@@ -130,7 +129,7 @@ static inline void table_row(Table *table, ...)
 static inline void calculate_col_widths(const Table *table, unsigned int *col_widths)
 {
     unsigned int max_col_width = 0;
-    for (unsigned int col = 0; col < table->num_cols; ++col) {
+    for (unsigned int col = 0; col < table->config.num_cols; ++col) {
         unsigned int max_str_len = 0;
         for (unsigned int row = 0; row < table->num_rows; ++row) {
             unsigned int value_len = strlen(table->rows_buffer[row][col]);
@@ -139,64 +138,64 @@ static inline void calculate_col_widths(const Table *table, unsigned int *col_wi
         col_widths[col] = max_str_len;
         if (max_str_len > max_col_width) max_col_width = max_str_len;
     }
-    if (table->even_col_spacing) {
-        for (unsigned int i = 0; i < table->num_cols; ++i) col_widths[i] = max_col_width;
+    if (table->config.even_col_spacing) {
+        for (unsigned int i = 0; i < table->config.num_cols; ++i) col_widths[i] = max_col_width;
     }
 }
 
 static inline void table_print_csv(const Table *table)
 {
-    if (!table || !table->output_stream) return;
+    if (!table || !table->config.output_stream) return;
 
     for (unsigned int row = 0; row < table->num_rows; ++row) {
-        for (unsigned int col = 0; col < table->num_cols; ++col) {
-            fprintf(table->output_stream, "%s", table->rows_buffer[row][col]);
-            if (col < table->num_cols - 1) fprintf(table->output_stream, ",");
+        for (unsigned int col = 0; col < table->config.num_cols; ++col) {
+            fprintf(table->config.output_stream, "%s", table->rows_buffer[row][col]);
+            if (col < table->config.num_cols - 1) fprintf(table->config.output_stream, ",");
         }
-        fprintf(table->output_stream, "\n");
+        fprintf(table->config.output_stream, "\n");
     }
 }
 
 static inline void table_print_border_line(const Table *table, unsigned int *col_widths, BorderChar left, BorderChar  centre, BorderChar right)
 {
-    fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][left]);
-    for (unsigned int col = 0; col < table->num_cols; ++col) {
-        for (unsigned int i = 0; i < col_widths[col] + (table->cell_padding * 2); ++i) {
-            fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_HORIZONTAL]);
+    fprintf(table->config.output_stream, "%s", BORDER_SETS[table->config.border_style][left]);
+    for (unsigned int col = 0; col < table->config.num_cols; ++col) {
+        for (unsigned int i = 0; i < col_widths[col] + (table->config.cell_padding * 2); ++i) {
+            fprintf(table->config.output_stream, "%s", BORDER_SETS[table->config.border_style][BORDER_HORIZONTAL]);
         }
-        if (col < table->num_cols - 1) fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][centre]);
-        else fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][right]);
+        if (col < table->config.num_cols - 1) fprintf(table->config.output_stream, "%s", BORDER_SETS[table->config.border_style][centre]);
+        else fprintf(table->config.output_stream, "%s", BORDER_SETS[table->config.border_style][right]);
     }
-    fprintf(table->output_stream, "\n");
+    fprintf(table->config.output_stream, "\n");
 }
 
 static inline void table_print_bordered(const Table *table)
 {
-    if (!table || !table->output_stream) return;
+    if (!table || !table->config.output_stream) return;
 
-    unsigned int col_widths[table->num_cols];
+    unsigned int col_widths[table->config.num_cols];
     calculate_col_widths(table, col_widths);
     // print top border
     table_print_border_line(table, col_widths, BORDER_TOP_LEFT, BORDER_TOP_MIDDLE, BORDER_TOP_RIGHT);
     // print rows with content
     for (unsigned int row = 0; row < table->num_rows; ++row) {
-        fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_VERTICAL]);
-        for (unsigned int col = 0; col < table->num_cols; ++col) {
+        fprintf(table->config.output_stream, "%s", BORDER_SETS[table->config.border_style][BORDER_VERTICAL]);
+        for (unsigned int col = 0; col < table->config.num_cols; ++col) {
             // left padding
-            for (unsigned int i = 0; i < table->cell_padding; ++i) {
-                fprintf(table->output_stream, " ");
+            for (unsigned int i = 0; i < table->config.cell_padding; ++i) {
+                fprintf(table->config.output_stream, " ");
             }
             // cell content
-            fprintf(table->output_stream, "%s", table->rows_buffer[row][col]);
+            fprintf(table->config.output_stream, "%s", table->rows_buffer[row][col]);
             // right padding + alignment
             unsigned int padding = col_widths[col] - strlen(table->rows_buffer[row][col]);
-            for (unsigned int i = 0; i < padding + table->cell_padding; ++i) {
-                fprintf(table->output_stream, " ");
+            for (unsigned int i = 0; i < padding + table->config.cell_padding; ++i) {
+                fprintf(table->config.output_stream, " ");
             }
-            if (col < table->num_cols - 1) fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_VERTICAL]);
-            else fprintf(table->output_stream, "%s", BORDER_SETS[table->border_style][BORDER_VERTICAL]);
+            if (col < table->config.num_cols - 1) fprintf(table->config.output_stream, "%s", BORDER_SETS[table->config.border_style][BORDER_VERTICAL]);
+            else fprintf(table->config.output_stream, "%s", BORDER_SETS[table->config.border_style][BORDER_VERTICAL]);
         }
-        fprintf(table->output_stream, "\n");
+        fprintf(table->config.output_stream, "\n");
         // print middle separator after each row (except last)
         if (row < table->num_rows - 1) {
             table_print_border_line(table, col_widths, BORDER_MIDDLE_LEFT, BORDER_MIDDLE_MIDDLE, BORDER_MIDDLE_RIGHT);
@@ -208,23 +207,23 @@ static inline void table_print_bordered(const Table *table)
 
 static inline void table_print_spaces(const Table *table)
 {
-    if (!table || !table->output_stream) return;
+    if (!table || !table->config.output_stream) return;
 
-    unsigned int col_widths[table->num_cols];
+    unsigned int col_widths[table->config.num_cols];
     calculate_col_widths(table, col_widths);
 
     for (unsigned int row = 0; row < table->num_rows; ++row) {
-        for (unsigned int col = 0; col < table->num_cols; ++col) {
-            fprintf(table->output_stream, "%s", table->rows_buffer[row][col]);
-            if (col < table->num_cols - 1) {
+        for (unsigned int col = 0; col < table->config.num_cols; ++col) {
+            fprintf(table->config.output_stream, "%s", table->rows_buffer[row][col]);
+            if (col < table->config.num_cols - 1) {
                 unsigned int curr_cell_len = strlen(table->rows_buffer[row][col]);
                 unsigned int padding = col_widths[col] - curr_cell_len;
                 for (unsigned int i = 0; i < padding + 1; ++i) {
-                    fprintf(table->output_stream, " ");
+                    fprintf(table->config.output_stream, " ");
                 }
             }
         }
-        fprintf(table->output_stream, "\n");
+        fprintf(table->config.output_stream, "\n");
     }
 }
 
@@ -233,7 +232,7 @@ static inline void table_print(const Table *table)
 {
     if (!table) return;
 
-    switch (table->output_format) {
+    switch (table->config.output_format) {
     case FORMAT_CSV:
         table_print_csv(table);
         break;

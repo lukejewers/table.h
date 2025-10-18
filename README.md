@@ -30,8 +30,16 @@ gcc -o main main.c
 #include "table.h"
 
 int main() {
-    // Create a CSV table with 3 columns
-    Table *table = table_init(stdout, FORMAT_CSV, BORDER_NONE, 3);
+    // Define the table config
+    TableConfig config = {
+        .output_stream = stdout,
+        .output_format = FORMAT_BORDERS,
+        .border_style = BORDER_SINGLE,
+        .even_col_spacing = false,
+        .cell_padding = 1,
+        .num_cols = 3,
+    };
+    Table *table = table_init(config);
 
     // Add rows of data
     table_row(table, "Name", "Age", "City");

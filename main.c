@@ -2,8 +2,15 @@
 
 int main(void)
 {
-    unsigned int num_cols = 3;
-    Table *table = table_init(stdout, FORMAT_BORDERS, BORDER_ROUND, num_cols);
+    TableConfig config = {
+        .output_stream = stdout,
+        .output_format = FORMAT_BORDERS,
+        .border_style = BORDER_SINGLE,
+        .even_col_spacing = false,
+        .cell_padding = 1,
+        .num_cols = 3,
+    };
+    Table *table = table_init(config);
     if (!table) return 1;
 
     table_row(table, "foo", "bar", "baz");
