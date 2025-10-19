@@ -132,6 +132,34 @@ static inline void table_row(Table *table, ...)
     va_end(args);
 }
 
+static inline void table_row_array(Table *table, const char **values)
+{
+    if (!table) return;
+    if (table->num_rows >= table->rows_buffer_size) {
+        table->rows_buffer_size *= 2;
+        char ***new_buffer = realloc(table->rows_buffer, sizeof(char **) * table->rows_buffer_size);
+        if (!new_buffer) {
+            fprintf(stderr, "Failed to resize table buffer\n");
+            return;
+        }
+        table->rows_buffer = new_buffer;
+    }
+
+    char **new_row = malloc(sizeof(char *) * table->config.num_cols);
+    if (!new_row) {
+        fprintf(stderr, "Failed to allocate row\n");
+        return;
+    }
+
+    for (unsigned int i = 0; i < table->config.num_cols; i++) {
+        new_row[i] = (char *)values[i];
+    }
+
+    table->rows_buffer[table->num_rows] = new_row;
+    table->num_rows++;
+}
+
+
 static inline void calculate_col_widths(const Table *table, unsigned int *col_widths)
 {
     unsigned int max_col_width = 0;

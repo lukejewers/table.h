@@ -13,12 +13,13 @@ int main(void)
     Table *table = table_init(config);
     if (!table) return 1;
 
-    table_row(table, "foo", "bar", "baz");
-    table_row(table, "one", "three", "five");
-    table_row(table, "a", "b", "c");
+    table_row(table, "Name", "Age", "City");
+    table_row(table, "Alice", "25", "New York");
+
+    const char *data[] = {"Bob", "30", "London"};
+    table_row_array(table, data);
 
     table_print(table);
-
     free_table(table);
     return 0;
 }

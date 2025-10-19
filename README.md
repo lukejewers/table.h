@@ -29,7 +29,8 @@ gcc -o main main.c
 ```c
 #include "table.h"
 
-int main() {
+int main(void)
+{
     // Define the table config
     TableConfig config = {
         .output_stream = stdout,
@@ -44,7 +45,10 @@ int main() {
     // Add rows of data
     table_row(table, "Name", "Age", "City");
     table_row(table, "Alice", "25", "New York");
-    table_row(table, "Bob", "30", "London");
+
+    // Add row from array
+    const char *data[] = {"Bob", "30", "London"};
+    table_row_array(table, data);
 
     // Print the table
     table_print(table);
