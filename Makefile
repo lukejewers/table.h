@@ -1,10 +1,14 @@
-.PHONY: run
+CC     := gcc
+SRC    := main.c
+TARGET := main
+CFLAGS := -Wall -Wextra -g
 
-run: main
-	./main
+all: $(TARGET)
 
-main: main.c
-	gcc -g -Wall -Wextra -o main main.c
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
 
 clean:
 	rm -f main
+
+.PHONY: clean

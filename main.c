@@ -3,12 +3,9 @@
 int main(void)
 {
     TableConfig config = {
-        .output_stream = stdout,
-        .output_format = FORMAT_BORDERS,
-        .border_style = BORDER_SINGLE,
-        .even_col_spacing = false,
         .cell_padding = 1,
         .num_cols = 3,
+        .output_stream = stdout,
     };
     Table *table = table_init(config);
     if (!table) return 1;
