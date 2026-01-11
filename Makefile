@@ -1,6 +1,6 @@
 CC     := gcc
-SRC    := main.c
-TARGET := main
+SRC    := example.c
+TARGET := example
 CFLAGS := -Wall -Wextra -g
 
 all: $(TARGET)
@@ -9,6 +9,6 @@ $(TARGET): $(SRC)
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
 
 clean:
-	rm -f main
+	rm -f example
 
 .PHONY: clean
