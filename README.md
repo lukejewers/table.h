@@ -19,10 +19,9 @@ int main(void)
 {
     TableConfig config = {
         .cell_padding = 1,
-        .num_cols = 3,
         .output_stream = stdout,
     };
-    Table *table = table_init(config);
+    Table *table = table_init(3, config);
 
     table_row(table, "Name", "Age", "City");
     table_row(table, "Alice", "25", "New York");
@@ -49,13 +48,13 @@ Output:
 
 ```c
 TableConfig config = {
-    .output_stream = stdout,       // FILE* for output
+    .output_stream = stdout,
     .output_format = FORMAT_BORDERS,
     .border_style = BORDER_SINGLE,
     .cell_padding = 1,
-    .num_cols = 3,
     .even_col_spacing = false,
 };
+Table *table = table_init(3, config);  // 3 columns
 ```
 
 ### Output Formats
@@ -74,3 +73,10 @@ TableConfig config = {
 | `BORDER_DOUBLE` | `╔═╦═╗` |
 | `BORDER_ROUND`  | `╭─┬─╮` |
 | `BORDER_ASCII`  | `+-+-+` |
+
+## Building the Example
+
+```console
+make
+./example
+```
