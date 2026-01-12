@@ -9,7 +9,7 @@ int main(void)
         table_row(table, "Alice", "25", "New York");
         table_row(table, "Bob", "30", "London");
         table_print(table);
-        free_table(table);
+        table_free(table);
     }
 
     printf("\n=== %s ===\n\n", "Double Border");
@@ -19,7 +19,7 @@ int main(void)
         table_row(table, "Widget", "$19.99", "150");
         table_row(table, "Gadget", "$49.99", "75");
         table_print(table);
-        free_table(table);
+        table_free(table);
     }
 
     printf("\n=== %s ===\n\n", "Rounded Border & Even Column Spacing");
@@ -28,7 +28,7 @@ int main(void)
         table_row(table, "A", "BB", "CCC");
         table_row(table, "DDDD", "E", "FF");
         table_print(table);
-        free_table(table);
+        table_free(table);
     }
 
     printf("\n=== %s ===\n\n", "ASCII Border");
@@ -38,7 +38,7 @@ int main(void)
         table_row(table, "debug", "true");
         table_row(table, "timeout", "30");
         table_print(table);
-        free_table(table);
+        table_free(table);
     }
 
     printf("\n=== %s ===\n\n", "CSV Output");
@@ -48,7 +48,7 @@ int main(void)
         table_row(table, "Alice", "alice@example.com", "First user");
         table_row(table, "Bob", "bob@example.com", "Says \"hello, world\"");
         table_print(table);
-        free_table(table);
+        table_free(table);
     }
 
     printf("\n=== %s ===\n\n", "Space-separated Output");
@@ -58,7 +58,7 @@ int main(void)
         table_row(table, "1234", "root", "/sbin/init");
         table_row(table, "5678", "luke", "vim");
         table_print(table);
-        free_table(table);
+        table_free(table);
     }
 
     printf("\n=== %s ===\n\n", "Using table_init()");
@@ -75,7 +75,7 @@ int main(void)
         table_row(table, "Alice", "25", "New York");
         table_row(table, "Bob", "30", "London");
         table_print(table);
-        free_table(table);
+        table_free(table);
     }
 
     printf("\n=== %s ===\n\n", "Using table_row_array()");
@@ -90,7 +90,7 @@ int main(void)
         table_row_array(table, row2);
         table_row_array(table, row3);
         table_print(table);
-        free_table(table);
+        table_free(table);
     }
 
     return 0;

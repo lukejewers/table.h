@@ -257,7 +257,7 @@ static inline void table_clear(Table *table)
 }
 
 /* Frees all memory associated with the table. */
-static inline void free_table(Table *table)
+static inline void table_free(Table *table)
 {
     if (!table) return;
     if (table->rows_buffer) free(table->rows_buffer);
@@ -268,7 +268,7 @@ static inline void free_table(Table *table)
 ** Adds a row using variadic arguments. Pass exactly num_cols strings.
 **
 ** NOTE: Strings are NOT copied. The table stores pointers to your strings.
-** Ensure the strings remain valid until after table_print() or free_table() is called.
+** Ensure the strings remain valid until after table_print() or table_free() is called.
 */
 static inline bool table_row(Table *table, ...)
 {
@@ -291,7 +291,7 @@ static inline bool table_row(Table *table, ...)
 ** Adds a row from a string array of length num_cols.
 **
 ** NOTE: Strings are NOT copied. The table stores pointers to your strings.
-** Ensure the strings remain valid until after table_print() or free_table() is called.
+** Ensure the strings remain valid until after table_print() or table_free() is called.
 **/
 static inline bool table_row_array(Table *table, const char **values)
 {

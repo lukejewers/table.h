@@ -28,7 +28,7 @@ int main(void)
     table_row(table, "Bob", "30", "London");
 
     table_print(table);
-    free_table(table);
+    table_free(table);
     return 0;
 }
 ```
