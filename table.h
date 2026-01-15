@@ -78,10 +78,7 @@ static inline bool table__realloc(Table *table)
     if (table->rows_buffer_count + table->config.num_cols > table->rows_buffer_capacity) {
         unsigned int new_cap = table->rows_buffer_capacity * 2;
         const char **new_buffer = realloc(table->rows_buffer, sizeof(char *) * new_cap);
-        if (!new_buffer) {
-            fputs("table.h: error: failed to resize\n", stderr);
-            return false;
-        }
+        if (!new_buffer) return false;
         table->rows_buffer = new_buffer;
         table->rows_buffer_capacity = new_cap;
     }
@@ -221,10 +218,7 @@ static inline void table__print_spaces(const Table *table)
 
 static inline Table *table_init(TableConfig config)
 {
-    if (config.num_cols <= 0) {
-        fputs("table.h: error: .num_cols must be greater than 0\n", stderr);
-        return NULL;
-    }
+    if (config.num_cols <= 0) return NULL;
 
     Table *table = malloc(sizeof(Table));
     if (table == NULL) return NULL;
