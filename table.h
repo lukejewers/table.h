@@ -161,7 +161,9 @@ static inline void table__print_bordered(const Table *table)
 {
     if (!table || !table->config.output_stream) return;
 
-    size_t col_widths[table->config.num_cols];
+    size_t *col_widths = malloc(sizeof(size_t) * table->config.num_cols);
+    if (!col_widths) return;
+
     table__calc_col_widths(table, col_widths);
     table__print_border_line(table, col_widths, TABLE__BORDER_TOP_LEFT, TABLE__BORDER_TOP_MIDDLE, TABLE__BORDER_TOP_RIGHT);
 
@@ -187,13 +189,16 @@ static inline void table__print_bordered(const Table *table)
     }
 
     table__print_border_line(table, col_widths, TABLE__BORDER_BOTTOM_LEFT, TABLE__BORDER_BOTTOM_MIDDLE, TABLE__BORDER_BOTTOM_RIGHT);
+    free(col_widths);
 }
 
 static inline void table__print_spaces(const Table *table)
 {
     if (!table || !table->config.output_stream) return;
 
-    size_t col_widths[table->config.num_cols];
+    size_t *col_widths = malloc(sizeof(size_t) * table->config.num_cols);
+    if (!col_widths) return;
+
     table__calc_col_widths(table, col_widths);
 
     for (unsigned int row = 0; row < table->num_rows; ++row) {
@@ -209,6 +214,8 @@ static inline void table__print_spaces(const Table *table)
         }
         fputc('\n', table->config.output_stream);
     }
+
+    free(col_widths);
 }
 
 
@@ -221,7 +228,7 @@ static inline Table *table_init(TableConfig config)
     if (config.num_cols <= 0) return NULL;
 
     Table *table = malloc(sizeof(Table));
-    if (table == NULL) return NULL;
+    if (!table) return NULL;
 
     table->rows_buffer_capacity = TABLE__INIT_SIZE;
     table->rows_buffer_count = 0;
@@ -231,7 +238,7 @@ static inline Table *table_init(TableConfig config)
     if (table->config.cell_padding == 0) table->config.cell_padding = 1;
 
     table->rows_buffer = malloc(sizeof(char *) * table->rows_buffer_capacity);
-    if (table->rows_buffer == NULL) {
+    if (!table->rows_buffer) {
         free(table);
         return NULL;
     }
