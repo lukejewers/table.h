@@ -42,6 +42,37 @@ typedef struct {
 } Table;
 
 /*
+** Styling Macros
+**
+** Use these macros to style individual cells:
+**
+**   table_row(table,
+**       TABLE_BOLD("Header1"),
+**       TABLE_BOLD("Header2"));
+**
+**   table_row(table,
+**       "Normal cell",
+**       TABLE_RED("Error"));
+**
+** Note: These only work on terminals that support ANSI escape codes.
+*/
+
+// Text styles
+#define TABLE_BOLD(text) "\033[1m" text "\033[0m"
+#define TABLE_ITALIC(text) "\033[3m" text "\033[0m"
+#define TABLE_UNDERLINE(text) "\033[4m" text "\033[0m"
+
+// Regular colors
+#define TABLE_BLACK(text) "\033[30m" text "\033[0m"
+#define TABLE_RED(text) "\033[31m" text "\033[0m"
+#define TABLE_GREEN(text) "\033[32m" text "\033[0m"
+#define TABLE_YELLOW(text) "\033[33m" text "\033[0m"
+#define TABLE_BLUE(text) "\033[34m" text "\033[0m"
+#define TABLE_MAGENTA(text) "\033[35m" text "\033[0m"
+#define TABLE_CYAN(text) "\033[36m" text "\033[0m"
+#define TABLE_WHITE(text) "\033[37m" text "\033[0m"
+
+/*
 ** Internal types and data
 */
 
