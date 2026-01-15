@@ -85,13 +85,24 @@ static inline bool table__realloc(Table *table)
     return true;
 }
 
+static inline size_t table__visible_length(const char *str) {
+    size_t len = 0;
+    int in_escape = false;
+    for (const char *p = str; *p; ++p) {
+        if (*p == '\033') in_escape = true;
+        else if (in_escape && *p == 'm') in_escape = false;
+        else if (!in_escape) ++len;
+    }
+    return len;
+}
+
 static inline void table__calc_col_widths(const Table *table, size_t *col_widths)
 {
     unsigned int max_col_width = 0;
     for (unsigned int col = 0; col < table->config.num_cols; ++col) {
         unsigned int max_str_len = 0;
         for (unsigned int row = 0; row < table->num_rows; ++row) {
-            size_t value_len = strlen(table->rows_buffer[row * table->config.num_cols + col]);
+            size_t value_len = table__visible_length(table->rows_buffer[row * table->config.num_cols + col]);
             if (value_len > max_str_len) max_str_len = value_len;
         }
         col_widths[col] = max_str_len;
@@ -176,7 +187,7 @@ static inline void table__print_bordered(const Table *table)
                 fputc(' ', table->config.output_stream);
             }
             fputs(table->rows_buffer[row * table->config.num_cols + col], table->config.output_stream);
-            size_t padding = col_widths[col] - strlen(table->rows_buffer[row * table->config.num_cols + col]);
+            size_t padding = col_widths[col] - table__visible_length(table->rows_buffer[row * table->config.num_cols + col]);
             for (unsigned int i = 0; i < padding + table->config.cell_padding; ++i) {
                 fputc(' ', table->config.output_stream);
             }
@@ -205,7 +216,7 @@ static inline void table__print_spaces(const Table *table)
         for (unsigned int col = 0; col < table->config.num_cols; ++col) {
             fputs(table->rows_buffer[row * table->config.num_cols + col], table->config.output_stream);
             if (col < table->config.num_cols - 1) {
-                size_t curr_cell_len = strlen(table->rows_buffer[row * table->config.num_cols + col]);
+                size_t curr_cell_len = table__visible_length(table->rows_buffer[row * table->config.num_cols + col]);
                 size_t padding = col_widths[col] - curr_cell_len;
                 for (size_t i = 0; i < padding + 1; ++i) {
                     fputc(' ', table->config.output_stream);
