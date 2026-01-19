@@ -24,10 +24,17 @@ typedef enum {
     BORDER_ROUND,    /* Rounded border: ╭────╮ */
 } BorderStyle;
 
+typedef enum {
+    ALIGN_LEFT,
+    ALIGN_CENTRE,
+    ALIGN_RIGHT,
+} Alignment;
+
 typedef struct {
     FILE *output_stream;
     OutputFormat output_format;
     BorderStyle border_style;
+    Alignment alignment;
     bool even_col_spacing;
     unsigned int cell_padding;
     unsigned int num_cols;
@@ -100,6 +107,11 @@ static const char * const TABLE__BORDER_SETS[][TABLE__BORDER_COUNT] = {
     {"╭", "┬", "╮", "├", "┼", "┤", "╰", "┴", "╯", "─", "│"}  /* BORDER_ROUND */
 };
 
+typedef struct {
+    unsigned int left;
+    unsigned int right;
+} Table__CellPadding;
+
 /*
 ** Internal functions
 */
@@ -116,7 +128,7 @@ static inline bool table__realloc(Table *table)
     return true;
 }
 
-static inline size_t table__visible_length(const char *str) {
+static inline size_t table__content_visible_length(const char *str) {
     size_t len = 0;
     int in_escape = false;
     for (const char *p = str; *p; ++p) {
@@ -133,7 +145,7 @@ static inline void table__calc_col_widths(const Table *table, size_t *col_widths
     for (unsigned int col = 0; col < table->config.num_cols; ++col) {
         unsigned int max_str_len = 0;
         for (unsigned int row = 0; row < table->num_rows; ++row) {
-            size_t value_len = table__visible_length(table->rows_buffer[row * table->config.num_cols + col]);
+            size_t value_len = table__content_visible_length(table->rows_buffer[row * table->config.num_cols + col]);
             if (value_len > max_str_len) max_str_len = value_len;
         }
         col_widths[col] = max_str_len;
@@ -199,6 +211,30 @@ static inline void table__print_border_line(const Table *table, size_t *col_widt
     fputc('\n', table->config.output_stream);
 }
 
+static inline Table__CellPadding table__get_cell_padding(const Table *table, size_t col_width, size_t content_len)
+{
+    Table__CellPadding cell_padding = {0};
+    size_t total_width = col_width + (table->config.cell_padding * 2);
+    size_t empty_space = total_width - content_len;
+
+    switch (table->config.alignment) {
+    case ALIGN_RIGHT:
+        cell_padding.right = table->config.cell_padding;
+        cell_padding.left = empty_space - cell_padding.right;
+        break;
+    case ALIGN_CENTRE:
+        cell_padding.left = empty_space / 2;
+        cell_padding.right = empty_space - cell_padding.left;
+        break;
+    case ALIGN_LEFT:
+    default:
+        cell_padding.left = table->config.cell_padding;
+        cell_padding.right = empty_space - cell_padding.left;
+        break;
+    }
+    return cell_padding;
+}
+
 static inline void table__print_bordered(const Table *table)
 {
     if (!table || !table->config.output_stream) return;
@@ -214,14 +250,11 @@ static inline void table__print_bordered(const Table *table)
     for (unsigned int row = 0; row < table->num_rows; ++row) {
         fputs(TABLE__BORDER_SETS[style][TABLE__BORDER_VERTICAL], table->config.output_stream);
         for (unsigned int col = 0; col < table->config.num_cols; ++col) {
-            for (unsigned int i = 0; i < table->config.cell_padding; ++i) {
-                fputc(' ', table->config.output_stream);
-            }
+            size_t content_len = table__content_visible_length(table->rows_buffer[row * table->config.num_cols + col]);
+            Table__CellPadding cell_padding = table__get_cell_padding(table, col_widths[col], content_len);
+            for (unsigned int i = 0; i < cell_padding.left; ++i) fputc(' ', table->config.output_stream);
             fputs(table->rows_buffer[row * table->config.num_cols + col], table->config.output_stream);
-            size_t padding = col_widths[col] - table__visible_length(table->rows_buffer[row * table->config.num_cols + col]);
-            for (unsigned int i = 0; i < padding + table->config.cell_padding; ++i) {
-                fputc(' ', table->config.output_stream);
-            }
+            for (unsigned int i = 0; i < cell_padding.right; ++i) fputc(' ', table->config.output_stream);
             fputs(TABLE__BORDER_SETS[style][TABLE__BORDER_VERTICAL], table->config.output_stream);
         }
         fputc('\n', table->config.output_stream);
@@ -247,7 +280,7 @@ static inline void table__print_spaces(const Table *table)
         for (unsigned int col = 0; col < table->config.num_cols; ++col) {
             fputs(table->rows_buffer[row * table->config.num_cols + col], table->config.output_stream);
             if (col < table->config.num_cols - 1) {
-                size_t curr_cell_len = table__visible_length(table->rows_buffer[row * table->config.num_cols + col]);
+                size_t curr_cell_len = table__content_visible_length(table->rows_buffer[row * table->config.num_cols + col]);
                 size_t padding = col_widths[col] - curr_cell_len;
                 for (size_t i = 0; i < padding + 1; ++i) {
                     fputc(' ', table->config.output_stream);
