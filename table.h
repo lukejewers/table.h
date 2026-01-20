@@ -199,11 +199,10 @@ static inline void table__print_border_line(const Table *table, size_t *col_widt
     fputc('\n', table->config.output_stream);
 }
 
-static inline Table__CellPadding table__get_cell_padding(const Table *table, size_t col_width, size_t content_len)
+static inline Table__CellPadding table__get_cell_padding(const Table *table, size_t total_cell_width, size_t content_len)
 {
     Table__CellPadding cell_padding = {0};
-    size_t total_width = col_width + (table->config.cell_padding * 2);
-    size_t empty_space = total_width - content_len;
+    size_t empty_space = total_cell_width - content_len;
 
     switch (table->config.alignment) {
     case TABLE_ALIGN_RIGHT:
@@ -239,7 +238,9 @@ static inline void table__print_bordered(const Table *table)
         fputs(TABLE__BORDER_SETS[style][TABLE__BORDER_VERTICAL], table->config.output_stream);
         for (unsigned int col = 0; col < table->config.num_cols; ++col) {
             size_t content_len = table__content_visible_length(table->rows_buffer[row * table->config.num_cols + col]);
-            Table__CellPadding cell_padding = table__get_cell_padding(table, col_widths[col], content_len);
+            size_t padding_multiplier = 2;
+            size_t total_cell_width = col_widths[col] + (table->config.cell_padding * padding_multiplier);
+            Table__CellPadding cell_padding = table__get_cell_padding(table, total_cell_width, content_len);
             for (unsigned int i = 0; i < cell_padding.left; ++i) fputc(' ', table->config.output_stream);
             fputs(table->rows_buffer[row * table->config.num_cols + col], table->config.output_stream);
             for (unsigned int i = 0; i < cell_padding.right; ++i) fputc(' ', table->config.output_stream);
@@ -257,7 +258,7 @@ static inline void table__print_bordered(const Table *table)
 
 static inline void table__print_spaces(const Table *table)
 {
-    if (!table || !table->config.output_stream) return;
+    if (!table || !table->config.output_stream || table->num_rows == 0) return;
 
     size_t *col_widths = malloc(sizeof(size_t) * table->config.num_cols);
     if (!col_widths) return;
@@ -266,21 +267,21 @@ static inline void table__print_spaces(const Table *table)
 
     for (unsigned int row = 0; row < table->num_rows; ++row) {
         for (unsigned int col = 0; col < table->config.num_cols; ++col) {
+            size_t content_len = table__content_visible_length(table->rows_buffer[row * table->config.num_cols + col]);
+            size_t padding_multiplier = table->config.alignment == TABLE_ALIGN_CENTRE ? 2 : 1;
+            size_t total_cell_width = col_widths[col] + (table->config.cell_padding * padding_multiplier);
+            Table__CellPadding cell_padding = table__get_cell_padding(table, total_cell_width, content_len);
+            unsigned int left_padding = (col == 0 && table->config.alignment == TABLE_ALIGN_LEFT) ? 0 : cell_padding.left;
+            for (unsigned int i = 0; i < left_padding; ++i) fputc(' ', table->config.output_stream);
             fputs(table->rows_buffer[row * table->config.num_cols + col], table->config.output_stream);
-            if (col < table->config.num_cols - 1) {
-                size_t curr_cell_len = table__content_visible_length(table->rows_buffer[row * table->config.num_cols + col]);
-                size_t padding = col_widths[col] - curr_cell_len;
-                for (size_t i = 0; i < padding + 1; ++i) {
-                    fputc(' ', table->config.output_stream);
-                }
-            }
+            unsigned int right_padding = (col == table->config.num_cols - 1 && table->config.alignment == TABLE_ALIGN_RIGHT) ? 0 : cell_padding.right;
+            for (unsigned int i = 0; i < right_padding; ++i) fputc(' ', table->config.output_stream);
+            if (col < table->config.num_cols - 1) fputc(' ', table->config.output_stream);
         }
         fputc('\n', table->config.output_stream);
     }
-
     free(col_widths);
 }
-
 
 /*
 ** Public API
