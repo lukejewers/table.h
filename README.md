@@ -55,8 +55,8 @@ Either use the convenience `table_create` macro:
 ```c
 Table *table = table_create(
     .num_cols = 3,
-    .output_format = FORMAT_SPACES,
-    .border_style = BORDER_ASCII,
+    .output_format = TABLE_FMT_SPACES,
+    .border_style = TABLE_BORDER_ASCII,
     .cell_padding = 2
 );
 ```
@@ -65,8 +65,8 @@ or pass a `TableConfig` struct to `table_init`:
 ```c
 TableConfig config = {
     .output_stream = stdout,
-    .output_format = FORMAT_BORDERS,
-    .border_style = BORDER_SINGLE,
+    .output_format = TABLE_FMT_BORDERS,
+    .border_style = TABLE_BORDER_SINGLE,
     .even_col_spacing = false,
     .cell_padding = 1,
     .num_cols = 3,  // Required
@@ -77,31 +77,44 @@ Table *table = table_init(config);
 
 ### Configuration Options
 
-| Field            | Type         | Default        | Description                    |
-|------------------|--------------|----------------|--------------------------------|
-| num_cols         | unsigned int | Required       | Number of columns in the table |
-| output_stream    | FILE*        | stdout         | Where to print the table       |
-| output_format    | OutputFormat | FORMAT_BORDERS | Table output format            |
-| border_style     | BorderStyle  | BORDER_SINGLE  | Border drawing style           |
-| even_col_spacing | bool         | false          | Make all columns equal width   |
-| cell_padding     | unsigned int | 1              | Spaces inside each cell        |
+| Field            | Type              | Default             | Description                      |
+|------------------|-------------------|---------------------|----------------------------------|
+| num_cols         | unsigned int      | Required            | Number of columns in the table   |
+| output_stream    | FILE*             | stdout              | Where to print the table         |
+| output_format    | TableOutputFormat | TABLE_FMT_BORDERS   | Table output format              |
+| border_style     | BorderStyle       | TABLE_BORDER_SINGLE | Border drawing style             |
+| even_col_spacing | bool              | false               | Make all columns equal width     |
+| cell_padding     | unsigned int      | 1                   | Spaces inside each cell          |
+| alignment        | TableAlignment    | TABLE_ALIGN_LEFT    | Alignment of table cell contents |
 
 ### Output Formats
 
-| Format           | Description              |
-|------------------|--------------------------|
-| `FORMAT_BORDERS` | Bordered table (default) |
-| `FORMAT_CSV`     | Comma-separated values   |
-| `FORMAT_SPACES`  | Space-aligned columns    |
+| Format              | Description              |
+|---------------------|--------------------------|
+| `TABLE_FMT_BORDERS` | Bordered table (default) |
+| `TABLE_FMT_CSV`     | Comma-separated values   |
+| `TABLE_FMT_SPACES`  | Space-aligned columns    |
 
 ### Border Styles
 
-| Style           | Example |
-|-----------------|---------|
-| `BORDER_SINGLE` | `┌─┬─┐` |
-| `BORDER_DOUBLE` | `╔═╦═╗` |
-| `BORDER_ROUND`  | `╭─┬─╮` |
-| `BORDER_ASCII`  | `+-+-+` |
+| Style                 | Example |
+|-----------------------|---------|
+| `TABLE_BORDER_SINGLE` | `┌─┬─┐` |
+| `TABLE_BORDER_DOUBLE` | `╔═╦═╗` |
+| `TABLE_BORDER_ROUND`  | `╭─┬─╮` |
+| `TABLE_BORDER_ASCII`  | `+-+-+` |
+
+### Styling
+
+You can use built-in macros to style individual cells. These use ANSI escape codes and work on most modern terminals.
+
+```c
+table_row(table,
+    TABLE_BOLD("Header"),
+    TABLE_RED("Critical"),
+    TABLE_GREEN("Online")
+);
+```
 
 ## Building the Example
 

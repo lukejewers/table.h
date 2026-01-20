@@ -12,29 +12,29 @@
 */
 
 typedef enum {
-    FORMAT_BORDERS,  /* Bordered table */
-    FORMAT_CSV,      /* Comma-separated values */
-    FORMAT_SPACES,   /* Space-separated */
-} OutputFormat;
+    TABLE_FMT_BORDERS,   /* Bordered table */
+    TABLE_FMT_CSV,       /* Comma-separated values */
+    TABLE_FMT_SPACES,    /* Space-separated */
+} TableOutputFormat;
 
 typedef enum {
-    BORDER_SINGLE,   /* Single border:  ┌────┐ */
-    BORDER_DOUBLE,   /* Double border:  ╔════╗ */
-    BORDER_ASCII,    /* Ascii border:   +----+ */
-    BORDER_ROUND,    /* Rounded border: ╭────╮ */
-} BorderStyle;
+    TABLE_BORDER_SINGLE, /* Single border:  ┌────┐ */
+    TABLE_BORDER_DOUBLE, /* Double border:  ╔════╗ */
+    TABLE_BORDER_ASCII,  /* Ascii border:   +----+ */
+    TABLE_BORDER_ROUND,  /* Rounded border: ╭────╮ */
+} TableBorderStyle;
 
 typedef enum {
-    ALIGN_LEFT,
-    ALIGN_CENTRE,
-    ALIGN_RIGHT,
-} Alignment;
+    TABLE_ALIGN_LEFT,
+    TABLE_ALIGN_CENTRE,
+    TABLE_ALIGN_RIGHT,
+} TableAlignment;
 
 typedef struct {
     FILE *output_stream;
-    OutputFormat output_format;
-    BorderStyle border_style;
-    Alignment alignment;
+    TableOutputFormat output_format;
+    TableBorderStyle border_style;
+    TableAlignment alignment;
     bool even_col_spacing;
     unsigned int cell_padding;
     unsigned int num_cols;
@@ -50,18 +50,6 @@ typedef struct {
 
 /*
 ** Styling Macros
-**
-** Use these macros to style individual cells:
-**
-**   table_row(table,
-**       TABLE_BOLD("Header1"),
-**       TABLE_BOLD("Header2"));
-**
-**   table_row(table,
-**       "Normal cell",
-**       TABLE_RED("Error"));
-**
-** Note: These only work on terminals that support ANSI escape codes.
 */
 
 // Text styles
@@ -101,10 +89,10 @@ typedef enum {
 } Table__BorderChar;
 
 static const char * const TABLE__BORDER_SETS[][TABLE__BORDER_COUNT] = {
-    {"┌", "┬", "┐", "├", "┼", "┤", "└", "┴", "┘", "─", "│"}, /* BORDER_SINGLE */
-    {"╔", "╦", "╗", "╠", "╬", "╣", "╚", "╩", "╝", "═", "║"}, /* BORDER_DOUBLE */
-    {"+", "+", "+", "+", "+", "+", "+", "+", "+", "-", "|"}, /* BORDER_ASCII */
-    {"╭", "┬", "╮", "├", "┼", "┤", "╰", "┴", "╯", "─", "│"}  /* BORDER_ROUND */
+    {"┌", "┬", "┐", "├", "┼", "┤", "└", "┴", "┘", "─", "│"}, /* TABLE_BORDER_SINGLE */
+    {"╔", "╦", "╗", "╠", "╬", "╣", "╚", "╩", "╝", "═", "║"}, /* TABLE_BORDER_DOUBLE */
+    {"+", "+", "+", "+", "+", "+", "+", "+", "+", "-", "|"}, /* TABLE_BORDER_ASCII */
+    {"╭", "┬", "╮", "├", "┼", "┤", "╰", "┴", "╯", "─", "│"}  /* TABLE_BORDER_ROUND */
 };
 
 typedef struct {
@@ -218,15 +206,15 @@ static inline Table__CellPadding table__get_cell_padding(const Table *table, siz
     size_t empty_space = total_width - content_len;
 
     switch (table->config.alignment) {
-    case ALIGN_RIGHT:
+    case TABLE_ALIGN_RIGHT:
         cell_padding.right = table->config.cell_padding;
         cell_padding.left = empty_space - cell_padding.right;
         break;
-    case ALIGN_CENTRE:
+    case TABLE_ALIGN_CENTRE:
         cell_padding.left = empty_space / 2;
         cell_padding.right = empty_space - cell_padding.left;
         break;
-    case ALIGN_LEFT:
+    case TABLE_ALIGN_LEFT:
     default:
         cell_padding.left = table->config.cell_padding;
         cell_padding.right = empty_space - cell_padding.left;
@@ -340,12 +328,7 @@ static inline void table_free(Table *table)
     free(table);
 }
 
-/*
-** Adds a row using variadic arguments. Pass exactly num_cols strings.
-**
-** NOTE: Strings are NOT copied. The table stores pointers to your strings.
-** Ensure the strings remain valid until after table_print() or table_free() is called.
-*/
+/* Adds a row using variadic arguments. Pass exactly num_cols strings. */
 static inline bool table_row(Table *table, ...)
 {
     if (!table) return false;
@@ -363,12 +346,7 @@ static inline bool table_row(Table *table, ...)
     return true;
 }
 
-/*
-** Adds a row from a string array of length num_cols.
-**
-** NOTE: Strings are NOT copied. The table stores pointers to your strings.
-** Ensure the strings remain valid until after table_print() or table_free() is called.
-**/
+/* Adds a row from a string array of length num_cols. */
 static inline bool table_row_array(Table *table, const char **values)
 {
     if (!table || !values) return false;
@@ -388,13 +366,13 @@ static inline void table_print(const Table *table)
     if (!table) return;
 
     switch (table->config.output_format) {
-    case FORMAT_CSV:
+    case TABLE_FMT_CSV:
         table__print_csv(table);
         break;
-    case FORMAT_SPACES:
+    case TABLE_FMT_SPACES:
         table__print_spaces(table);
         break;
-    case FORMAT_BORDERS:
+    case TABLE_FMT_BORDERS:
         table__print_bordered(table);
         break;
     }

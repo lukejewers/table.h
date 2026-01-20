@@ -2,7 +2,7 @@
 
 int main(void)
 {
-    printf("\n=== %s ===\n\n", "Single Border");
+    printf("\n=== %s ===\n", "Single Border");
     {
         Table *table = table_create(.num_cols = 3);
         table_row(table, "Name", "Age", "City");
@@ -12,9 +12,9 @@ int main(void)
         table_free(table);
     }
 
-    printf("\n=== %s ===\n\n", "Double Border");
+    printf("\n=== %s ===\n", "Double Border");
     {
-        Table *table = table_create(.num_cols = 3, .border_style = BORDER_DOUBLE);
+        Table *table = table_create(.num_cols = 3, .border_style = TABLE_BORDER_DOUBLE);
         table_row(table, "Product", "Price", "Stock");
         table_row(table, "Widget", "$19.99", "150");
         table_row(table, "Gadget", "$49.99", "75");
@@ -22,18 +22,18 @@ int main(void)
         table_free(table);
     }
 
-    printf("\n=== %s ===\n\n", "Rounded Border & Even Column Spacing");
+    printf("\n=== %s ===\n", "Rounded Border & Even Column Spacing");
     {
-        Table *table = table_create(.num_cols = 3, .border_style = BORDER_ROUND, .even_col_spacing = true);
+        Table *table = table_create(.num_cols = 3, .border_style = TABLE_BORDER_ROUND, .even_col_spacing = true);
         table_row(table, "A", "BB", "CCC");
         table_row(table, "DDDD", "E", "FF");
         table_print(table);
         table_free(table);
     }
 
-    printf("\n=== %s ===\n\n", "ASCII Border");
+    printf("\n=== %s ===\n", "ASCII Border");
     {
-        Table *table = table_create(.num_cols = 2, .border_style = BORDER_ASCII);
+        Table *table = table_create(.num_cols = 2, .border_style = TABLE_BORDER_ASCII);
         table_row(table, "Key", "Value");
         table_row(table, "debug", "true");
         table_row(table, "timeout", "30");
@@ -41,9 +41,9 @@ int main(void)
         table_free(table);
     }
 
-    printf("\n=== %s ===\n\n", "CSV Output");
+    printf("\n=== %s ===\n", "CSV Output");
     {
-        Table *table = table_create(.num_cols = 3, .output_format = FORMAT_CSV);
+        Table *table = table_create(.num_cols = 3, .output_format = TABLE_FMT_CSV);
         table_row(table, "name", "email", "notes");
         table_row(table, "Alice", "alice@example.com", "First user");
         table_row(table, "Bob", "bob@example.com", "Says \"hello, world\"");
@@ -51,9 +51,9 @@ int main(void)
         table_free(table);
     }
 
-    printf("\n=== %s ===\n\n", "Space-separated Output");
+    printf("\n=== %s ===\n", "Space-separated Output");
     {
-        Table *table = table_create(.num_cols = 3, .output_format = FORMAT_SPACES);
+        Table *table = table_create(.num_cols = 3, .output_format = TABLE_FMT_SPACES);
         table_row(table, "PID", "USER", "COMMAND");
         table_row(table, "1234", "root", "/sbin/init");
         table_row(table, "5678", "luke", "vim");
@@ -61,14 +61,14 @@ int main(void)
         table_free(table);
     }
 
-    printf("\n=== %s ===\n\n", "Using table_init()");
+    printf("\n=== %s ===\n", "Using table_init()");
     {
         TableConfig config = {
             .cell_padding = 1,
             .num_cols = 3,
             .output_stream = stdout,
-            .output_format = FORMAT_BORDERS,
-            .border_style = BORDER_DOUBLE,
+            .output_format = TABLE_FMT_BORDERS,
+            .border_style = TABLE_BORDER_DOUBLE,
         };
         Table *table = table_init(config);
         table_row(table, "Name", "Age", "City");
@@ -78,7 +78,7 @@ int main(void)
         table_free(table);
     }
 
-    printf("\n=== %s ===\n\n", "Using table_row_array()");
+    printf("\n=== %s ===\n", "Using table_row_array()");
     {
         Table *table = table_create(.num_cols = 2);
         const char *header[] = {"Option", "Description"};
