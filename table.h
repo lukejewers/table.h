@@ -42,9 +42,9 @@ typedef struct {
 
 typedef struct {
     TableConfig config;
-    const char **rows_buffer;
-    unsigned int rows_buffer_capacity;
-    unsigned int rows_buffer_count;
+    const char **row_data;
+    unsigned int row_data_capacity;
+    unsigned int row_data_count;
     unsigned int num_rows;
 } Table;
 
@@ -106,12 +106,12 @@ typedef struct {
 
 static inline bool table__realloc(Table *table)
 {
-    if (table->rows_buffer_count + table->config.num_cols > table->rows_buffer_capacity) {
-        unsigned int new_cap = table->rows_buffer_capacity * 2;
-        const char **new_buffer = realloc(table->rows_buffer, sizeof(char *) * new_cap);
+    if (table->row_data_count + table->config.num_cols > table->row_data_capacity) {
+        unsigned int new_cap = table->row_data_capacity * 2;
+        const char **new_buffer = realloc(table->row_data, sizeof(char *) * new_cap);
         if (!new_buffer) return false;
-        table->rows_buffer = new_buffer;
-        table->rows_buffer_capacity = new_cap;
+        table->row_data = new_buffer;
+        table->row_data_capacity = new_cap;
     }
     return true;
 }
@@ -133,7 +133,7 @@ static inline void table__calc_col_widths(const Table *table, size_t *col_widths
     for (unsigned int col = 0; col < table->config.num_cols; ++col) {
         unsigned int max_str_len = 0;
         for (unsigned int row = 0; row < table->num_rows; ++row) {
-            size_t value_len = table__content_visible_length(table->rows_buffer[row * table->config.num_cols + col]);
+            size_t value_len = table__content_visible_length(table->row_data[row * table->config.num_cols + col]);
             if (value_len > max_str_len) max_str_len = value_len;
         }
         col_widths[col] = max_str_len;
@@ -173,7 +173,7 @@ static inline void table__print_csv(const Table *table)
 
     for (unsigned int row = 0; row < table->num_rows; ++row) {
         for (unsigned int col = 0; col < table->config.num_cols; ++col) {
-            table__print_csv_value(table->config.output_stream, table->rows_buffer[row * table->config.num_cols + col]);
+            table__print_csv_value(table->config.output_stream, table->row_data[row * table->config.num_cols + col]);
             if (col < table->config.num_cols - 1) fputs(",", table->config.output_stream);
         }
         fputs("\n", table->config.output_stream);
@@ -237,12 +237,12 @@ static inline void table__print_bordered(const Table *table)
     for (unsigned int row = 0; row < table->num_rows; ++row) {
         fputs(TABLE__BORDER_SETS[style][TABLE__BORDER_VERTICAL], table->config.output_stream);
         for (unsigned int col = 0; col < table->config.num_cols; ++col) {
-            size_t content_len = table__content_visible_length(table->rows_buffer[row * table->config.num_cols + col]);
+            size_t content_len = table__content_visible_length(table->row_data[row * table->config.num_cols + col]);
             size_t padding_multiplier = 2;
             size_t total_cell_width = col_widths[col] + (table->config.cell_padding * padding_multiplier);
             Table__CellPadding cell_padding = table__get_cell_padding(table, total_cell_width, content_len);
             for (unsigned int i = 0; i < cell_padding.left; ++i) fputc(' ', table->config.output_stream);
-            fputs(table->rows_buffer[row * table->config.num_cols + col], table->config.output_stream);
+            fputs(table->row_data[row * table->config.num_cols + col], table->config.output_stream);
             for (unsigned int i = 0; i < cell_padding.right; ++i) fputc(' ', table->config.output_stream);
             fputs(TABLE__BORDER_SETS[style][TABLE__BORDER_VERTICAL], table->config.output_stream);
         }
@@ -267,13 +267,13 @@ static inline void table__print_spaces(const Table *table)
 
     for (unsigned int row = 0; row < table->num_rows; ++row) {
         for (unsigned int col = 0; col < table->config.num_cols; ++col) {
-            size_t content_len = table__content_visible_length(table->rows_buffer[row * table->config.num_cols + col]);
+            size_t content_len = table__content_visible_length(table->row_data[row * table->config.num_cols + col]);
             size_t padding_multiplier = table->config.alignment == TABLE_ALIGN_CENTRE ? 2 : 1;
             size_t total_cell_width = col_widths[col] + (table->config.cell_padding * padding_multiplier);
             Table__CellPadding cell_padding = table__get_cell_padding(table, total_cell_width, content_len);
             unsigned int left_padding = (col == 0 && table->config.alignment == TABLE_ALIGN_LEFT) ? 0 : cell_padding.left;
             for (unsigned int i = 0; i < left_padding; ++i) fputc(' ', table->config.output_stream);
-            fputs(table->rows_buffer[row * table->config.num_cols + col], table->config.output_stream);
+            fputs(table->row_data[row * table->config.num_cols + col], table->config.output_stream);
             unsigned int right_padding = (col == table->config.num_cols - 1 && table->config.alignment == TABLE_ALIGN_RIGHT) ? 0 : cell_padding.right;
             for (unsigned int i = 0; i < right_padding; ++i) fputc(' ', table->config.output_stream);
             if (col < table->config.num_cols - 1) fputc(' ', table->config.output_stream);
@@ -294,15 +294,15 @@ static inline Table *table_init(TableConfig config)
     Table *table = malloc(sizeof(Table));
     if (!table) return NULL;
 
-    table->rows_buffer_capacity = TABLE__INIT_SIZE;
-    table->rows_buffer_count = 0;
+    table->row_data_capacity = TABLE__INIT_SIZE;
+    table->row_data_count = 0;
     table->num_rows = 0;
     table->config = config;
     if (!table->config.output_stream) table->config.output_stream = stdout;
     if (table->config.cell_padding == 0) table->config.cell_padding = 1;
 
-    table->rows_buffer = malloc(sizeof(char *) * table->rows_buffer_capacity);
-    if (!table->rows_buffer) {
+    table->row_data = malloc(sizeof(char *) * table->row_data_capacity);
+    if (!table->row_data) {
         free(table);
         return NULL;
     }
@@ -317,7 +317,7 @@ static inline Table *table_init(TableConfig config)
 static inline void table_clear(Table *table)
 {
     if (!table) return;
-    table->rows_buffer_count = 0;
+    table->row_data_count = 0;
     table->num_rows = 0;
 }
 
@@ -325,7 +325,7 @@ static inline void table_clear(Table *table)
 static inline void table_free(Table *table)
 {
     if (!table) return;
-    if (table->rows_buffer) free(table->rows_buffer);
+    if (table->row_data) free(table->row_data);
     free(table);
 }
 
@@ -340,7 +340,7 @@ static inline bool table_row(Table *table, ...)
     va_start(args, table);
     for (unsigned int i = 0; i < table->config.num_cols; ++i) {
         const char *value = va_arg(args, char *);
-        table->rows_buffer[table->rows_buffer_count++] = value ? value : "";
+        table->row_data[table->row_data_count++] = value ? value : "";
     }
     table->num_rows++;
     va_end(args);
@@ -355,7 +355,7 @@ static inline bool table_row_array(Table *table, const char **values)
     if (!table__realloc(table)) return false;
 
     for (unsigned int i = 0; i < table->config.num_cols; ++i) {
-        table->rows_buffer[table->rows_buffer_count++] = values[i] ? values[i] : "";
+        table->row_data[table->row_data_count++] = values[i] ? values[i] : "";
     }
     table->num_rows++;
     return true;
