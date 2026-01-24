@@ -51,23 +51,35 @@ typedef struct {
 } Table;
 
 /*
-** Styling Macros
+** Styling Macros (ANSI Escape Codes)
+**
+** 1. Macro: Use TABLE_CELL_STYLE(style, "text") for automatic resetting.
+**           Note: 'style' can be one or more tags (e.g. TABLE_BOLD TABLE_RED).
+** 2. Tags:  Stack tags like TABLE_BOLD TABLE_RED "text" TABLE_RESET.
+**           IMPORTANT: When using tags manually, you MUST append TABLE_RESET
+**           to prevent styles from "bleeding" into table borders or the terminal.
 */
 
-// Text styles
-#define TABLE_BOLD(text) "\033[1m" text "\033[0m"
-#define TABLE_ITALIC(text) "\033[3m" text "\033[0m"
-#define TABLE_UNDERLINE(text) "\033[4m" text "\033[0m"
+#define TABLE_RESET     "\033[0m"
 
-// Regular colors
-#define TABLE_BLACK(text) "\033[30m" text "\033[0m"
-#define TABLE_RED(text) "\033[31m" text "\033[0m"
-#define TABLE_GREEN(text) "\033[32m" text "\033[0m"
-#define TABLE_YELLOW(text) "\033[33m" text "\033[0m"
-#define TABLE_BLUE(text) "\033[34m" text "\033[0m"
-#define TABLE_MAGENTA(text) "\033[35m" text "\033[0m"
-#define TABLE_CYAN(text) "\033[36m" text "\033[0m"
-#define TABLE_WHITE(text) "\033[37m" text "\033[0m"
+// Convenience macro
+#define TABLE_CELL_STYLE(style, text) style text TABLE_RESET
+
+// Text Styles
+#define TABLE_BOLD      "\033[1m"
+#define TABLE_ITALIC    "\033[3m"
+#define TABLE_UNDERLINE "\033[4m"
+
+// Colors
+#define TABLE_BLACK     "\033[30m"
+#define TABLE_RED       "\033[31m"
+#define TABLE_GREEN     "\033[32m"
+#define TABLE_YELLOW    "\033[33m"
+#define TABLE_BLUE      "\033[34m"
+#define TABLE_MAGENTA   "\033[35m"
+#define TABLE_CYAN      "\033[36m"
+#define TABLE_WHITE     "\033[37m"
+
 
 /*
 ** Internal types and data

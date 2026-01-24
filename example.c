@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "table.h"
 
 int main(void)
@@ -16,10 +17,13 @@ int main(void)
     printf("\n=== %s ===\n", "Double Border & Rich Styling");
     {
         Table *table = table_create(.num_cols = 3, .border_style = TABLE_BORDER_DOUBLE);
-        table_row(table, TABLE_BOLD("Server"), TABLE_BOLD("Uptime"), TABLE_BOLD("Status"));
-        table_row(table, "US-East-1", "142 days", TABLE_GREEN("OPERATIONAL"));
-        table_row(table, "EU-Central-1", "12 hours", TABLE_YELLOW("DEGRADED"));
-        table_row(table, "AP-South-1", "0 days", TABLE_RED("OFFLINE"));
+        table_row(table, TABLE_BOLD TABLE_UNDERLINE "Server" TABLE_RESET,
+                         TABLE_BOLD TABLE_UNDERLINE "Uptime" TABLE_RESET,
+                         TABLE_BOLD TABLE_UNDERLINE "Status" TABLE_RESET);
+        table_row(table, "US-East-1", "142 days", TABLE_CELL_STYLE(TABLE_GREEN, "OPERATIONAL"));
+        table_row(table, "EU-Central-1", "12 hours", TABLE_CELL_STYLE(TABLE_YELLOW, "DEGRADED"));
+        table_row(table, "AP-South-1", "0 days", TABLE_CELL_STYLE(TABLE_RED, "OFFLINE"));
+
         table_print(table);
         table_free(table);
     }

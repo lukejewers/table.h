@@ -107,13 +107,27 @@ Table *table = table_init(config);
 
 ### Styling
 
-You can use built-in macros to style individual cells. These use ANSI escape codes and work on most modern terminals.
+The library provides ANSI escape sequences for terminal styling. These are designed to be used in two ways:
+
+1. The Convenience Macro
+
+Use TABLE_CELL_STYLE for a single-cell wrap. It automatically appends TABLE_RESET to prevent color "bleeding."
 
 ```c
 table_row(table,
-    TABLE_BOLD("Header"),
-    TABLE_RED("Critical"),
-    TABLE_GREEN("Online")
+    TABLE_CELL_STYLE(TABLE_BOLD, "Status"),
+    TABLE_CELL_STYLE(TABLE_GREEN, "ONLINE")
+);
+```
+
+2. Manual Tags
+
+For complex styling (like Bold + Red), you can stack tags manually. You must end the string with TABLE_RESET.
+
+```c
+table_row(table,
+    TABLE_BOLD TABLE_RED "CRITICAL ERROR" TABLE_RESET,
+    "Drive Failure"
 );
 ```
 
