@@ -78,7 +78,7 @@ Table *table = table_init(config);
 ### Configuration Options
 
 | Field            | Type              | Default             | Description                      |
-|------------------|-------------------|---------------------|----------------------------------|
+| ---------------- | ----------------- | ------------------- | -------------------------------- |
 | num_cols         | unsigned int      | Required            | Number of columns in the table   |
 | output_stream    | FILE*             | stdout              | Where to print the table         |
 | output_format    | TableOutputFormat | TABLE_FMT_BORDERS   | Table output format              |
@@ -89,16 +89,17 @@ Table *table = table_init(config);
 
 ### Output Formats
 
-| Format              | Description              |
-|---------------------|--------------------------|
-| `TABLE_FMT_BORDERS` | Bordered table (default) |
-| `TABLE_FMT_CSV`     | Comma-separated values   |
-| `TABLE_FMT_SPACES`  | Space-aligned columns    |
+| Format              | Description               |
+| ------------------- | ------------------------- |
+| `TABLE_FMT_BORDERS` | Bordered table (default)  |
+| `TABLE_FMT_CSV`     | Comma-separated values    |
+| `TABLE_FMT_SPACES`  | Space-aligned columns     |
+| `TABLE_FMT_PIPE`    | Pipe-delimited (Markdown) |
 
 ### Border Styles
 
 | Style                 | Example |
-|-----------------------|---------|
+| -------------------- -| ------- |
 | `TABLE_BORDER_SINGLE` | `┌─┬─┐` |
 | `TABLE_BORDER_DOUBLE` | `╔═╦═╗` |
 | `TABLE_BORDER_ROUND`  | `╭─┬─╮` |
