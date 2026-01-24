@@ -88,7 +88,7 @@ int main(void)
     {
         Table *table = table_create(
             .num_cols = 3,
-            .output_format = TABLE_FMT_SPACES,
+            .output_format = TABLE_FMT_SPACE,
             .cell_padding = 2
         );
         table_row(table, "UID", "GID", "HOME");

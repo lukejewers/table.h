@@ -55,7 +55,7 @@ Either use the convenience `table_create` macro:
 ```c
 Table *table = table_create(
     .num_cols = 3,
-    .output_format = TABLE_FMT_SPACES,
+    .output_format = TABLE_FMT_SPACE,
     .border_style = TABLE_BORDER_ASCII,
     .cell_padding = 2
 );
@@ -93,7 +93,7 @@ Table *table = table_init(config);
 | ------------------- | ------------------------- |
 | `TABLE_FMT_BORDERS` | Bordered table (default)  |
 | `TABLE_FMT_CSV`     | Comma-separated values    |
-| `TABLE_FMT_SPACES`  | Space-aligned columns     |
+| `TABLE_FMT_SPACE`  | Space-aligned columns     |
 | `TABLE_FMT_PIPE`    | Pipe-delimited (Markdown) |
 
 ### Border Styles

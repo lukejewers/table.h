@@ -14,7 +14,7 @@
 typedef enum {
     TABLE_FMT_BORDERS,     /* Bordered table */
     TABLE_FMT_CSV,         /* Comma-separated values */
-    TABLE_FMT_SPACES,      /* Space-separated */
+    TABLE_FMT_SPACE,       /* Space-separated */
     TABLE_FMT_PIPE,        /* Pipe-delimited */
 } TableOutputFormat;
 
@@ -185,6 +185,7 @@ static inline void table__print_csv(const Table *table)
 
 static inline size_t table__get_border_style(const Table *table)
 {
+    if (table->config.output_format == TABLE_FMT_PIPE) return TABLE_BORDER_PIPE;
     return table->config.border_style < 5 ? table->config.border_style : 0;
 }
 
@@ -237,7 +238,10 @@ static inline void table__print_bordered(const Table *table)
     table__calc_col_widths(table, col_widths);
 
     size_t style = table__get_border_style(table);
-    table__print_border_line(table, col_widths, style, TABLE__BORDER_TOP_LEFT, TABLE__BORDER_TOP_MIDDLE, TABLE__BORDER_TOP_RIGHT);
+
+    if (table->config.output_format != TABLE_FMT_PIPE) {
+        table__print_border_line(table, col_widths, style, TABLE__BORDER_TOP_LEFT, TABLE__BORDER_TOP_MIDDLE, TABLE__BORDER_TOP_RIGHT);
+    }
 
     for (size_t row = 0; row < table->num_rows; ++row) {
         fputs(TABLE__BORDER_SETS[style][TABLE__BORDER_VERTICAL], table->config.output_stream);
@@ -253,46 +257,18 @@ static inline void table__print_bordered(const Table *table)
         }
         fputc('\n', table->config.output_stream);
         if (row < table->num_rows - 1) {
+            if (table->config.output_format == TABLE_FMT_PIPE && row != 0)  continue;
             table__print_border_line(table, col_widths, style, TABLE__BORDER_MIDDLE_LEFT, TABLE__BORDER_MIDDLE_MIDDLE, TABLE__BORDER_MIDDLE_RIGHT);
         }
     }
 
-    table__print_border_line(table, col_widths, style, TABLE__BORDER_BOTTOM_LEFT, TABLE__BORDER_BOTTOM_MIDDLE, TABLE__BORDER_BOTTOM_RIGHT);
-    free(col_widths);
-}
-
-static inline void table__print_markdown(const Table *table)
-{
-    if (!table || !table->config.output_stream) return;
-
-    size_t *col_widths = malloc(sizeof(size_t) * table->config.num_cols);
-    if (!col_widths) return;
-    table__calc_col_widths(table, col_widths);
-
-    size_t style = TABLE_BORDER_PIPE;
-
-    for (size_t row = 0; row < table->num_rows; ++row) {
-        fputs(TABLE__BORDER_SETS[style][TABLE__BORDER_VERTICAL], table->config.output_stream);
-        for (size_t col = 0; col < table->config.num_cols; ++col) {
-            size_t content_len = table__content_visible_length(table->row_data[row * table->config.num_cols + col]);
-            size_t padding_multiplier = 2;
-            size_t total_cell_width = col_widths[col] + (table->config.cell_padding * padding_multiplier);
-            Table__CellPadding cell_padding = table__get_cell_padding(table, total_cell_width, content_len);
-            for (size_t i = 0; i < cell_padding.left; ++i) fputc(' ', table->config.output_stream);
-            fputs(table->row_data[row * table->config.num_cols + col], table->config.output_stream);
-            for (size_t i = 0; i < cell_padding.right; ++i) fputc(' ', table->config.output_stream);
-            fputs(TABLE__BORDER_SETS[style][TABLE__BORDER_VERTICAL], table->config.output_stream);
-        }
-        fputc('\n', table->config.output_stream);
-        if (row < table->num_rows - 1 && row == 0) {
-            table__print_border_line(table, col_widths, style, TABLE__BORDER_MIDDLE_LEFT, TABLE__BORDER_MIDDLE_MIDDLE, TABLE__BORDER_MIDDLE_RIGHT);
-        }
+    if (table->config.output_format != TABLE_FMT_PIPE) {
+        table__print_border_line(table, col_widths, style, TABLE__BORDER_BOTTOM_LEFT, TABLE__BORDER_BOTTOM_MIDDLE, TABLE__BORDER_BOTTOM_RIGHT);
     }
-
     free(col_widths);
 }
 
-static inline void table__print_spaces(const Table *table)
+static inline void table__print_space(const Table *table)
 {
     if (!table || !table->config.output_stream || table->num_rows == 0) return;
 
@@ -403,16 +379,16 @@ static inline void table_print(const Table *table)
 
     switch (table->config.output_format) {
     case TABLE_FMT_BORDERS:
+    case TABLE_FMT_PIPE:
         table__print_bordered(table);
+        break;
+    case TABLE_FMT_SPACE:
+        table__print_space(table);
         break;
     case TABLE_FMT_CSV:
         table__print_csv(table);
         break;
-    case TABLE_FMT_PIPE:
-        table__print_markdown(table);
-        break;
-    case TABLE_FMT_SPACES:
-        table__print_spaces(table);
+    default:
         break;
     }
 }
