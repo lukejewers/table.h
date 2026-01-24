@@ -14,6 +14,19 @@ int main(void)
         table_free(table);
     }
 
+    printf("\n=== %s ===\n", "Grid Lines (Full Separators)");
+    {
+        Table *table = table_create(.num_cols = 3, .grid_lines = true);
+
+        table_row(table, "Service", "Port", "Priority");
+        table_row(table, "Database", "5432", "High");
+        table_row(table, "Auth API", "8080", "Critical");
+        table_row(table, "Cache", "6379", "Medium");
+
+        table_print(table);
+        table_free(table);
+    }
+
     printf("\n=== %s ===\n", "Double Border & Rich Styling");
     {
         Table *table = table_create(.num_cols = 3, .border_type = TABLE_BORDER_DOUBLE);

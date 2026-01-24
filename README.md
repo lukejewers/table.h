@@ -42,8 +42,8 @@ Output:
 ┌───────┬─────┬──────────┐
 │ Name  │ Age │ City     │
 ├───────┼─────┼──────────┤
+│ John  │ 18  │ Paris    │
 │ Alice │ 25  │ New York │
-├───────┼─────┼──────────┤
 │ Bob   │ 30  │ London   │
 └───────┴─────┴──────────┘
 ```
@@ -77,15 +77,16 @@ Table *table = table_init(config);
 
 ### Configuration Options
 
-| Field            | Type              | Default             | Description                      |
-| ---------------- | ----------------- | ------------------- | -------------------------------- |
-| output_stream    | FILE*             | stdout              | Where to print the table         |
-| cell_padding     | size_t            | 1                   | Spaces inside each cell          |
-| num_cols         | size_t            | Required            | Number of columns in the table   |
-| output_format    | TableOutputFormat | TABLE_FMT_BORDERS   | Table output format              |
-| border_type      | TableBorderStyle  | TABLE_BORDER_SINGLE | Border drawing type              |
-| alignment        | TableAlignment    | TABLE_ALIGN_LEFT    | Alignment of table cell contents |
-| even_col_spacing | bool              | false               | Make all columns equal width     |
+| Field            | Type              | Default             | Description                               |
+| ---------------- | ----------------- | ------------------- | ----------------------------------------- |
+| output_stream    | FILE*             | stdout              | Where to print the table                  |
+| cell_padding     | size_t            | 1                   | Spaces inside each cell                   |
+| num_cols         | size_t            | Required            | Number of columns in the table            |
+| output_format    | TableOutputFormat | TABLE_FMT_BORDERS   | Table output format                       |
+| border_type      | TableBorderStyle  | TABLE_BORDER_SINGLE | Border drawing type                       |
+| alignment        | TableAlignment    | TABLE_ALIGN_LEFT    | Alignment of table cell contents          |
+| even_col_spacing | bool              | false               | Make all columns equal width              |
+| grid_lines       | bool              | false               | Make every row have horizontal separators |
 
 ### Output Formats
 

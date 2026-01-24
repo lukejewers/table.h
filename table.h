@@ -40,6 +40,7 @@ typedef struct {
     TableBorderType border_type;
     TableAlignment alignment;
     bool even_col_spacing;
+    bool grid_lines;
 } TableConfig;
 
 typedef struct {
@@ -270,7 +271,9 @@ static inline void table__print_bordered(const Table *table)
         fputc('\n', table->config.output_stream);
         if (row < table->num_rows - 1) {
             if (table->config.output_format == TABLE_FMT_PIPE && row != 0)  continue;
-            table__print_border_line(table, col_widths, style, TABLE__BORDER_MIDDLE_LEFT, TABLE__BORDER_MIDDLE_MIDDLE, TABLE__BORDER_MIDDLE_RIGHT);
+            if (row == 0 || table->config.grid_lines) {
+                table__print_border_line(table, col_widths, style, TABLE__BORDER_MIDDLE_LEFT, TABLE__BORDER_MIDDLE_MIDDLE, TABLE__BORDER_MIDDLE_RIGHT);
+            }
         }
     }
 
