@@ -54,22 +54,22 @@ Either use the convenience `table_create` macro:
 
 ```c
 Table *table = table_create(
-    .num_cols = 3,
+    .num_cols      = 3, // Required
     .output_format = TABLE_FMT_SPACE,
-    .border_style = TABLE_BORDER_ASCII,
-    .cell_padding = 2
+    .border_type   = TABLE_BORDER_ASCII,
+    .cell_padding  = 2
 );
 ```
 
 or pass a `TableConfig` struct to `table_init`:
 ```c
 TableConfig config = {
-    .output_stream = stdout,
-    .output_format = TABLE_FMT_BORDERS,
-    .border_style = TABLE_BORDER_SINGLE,
+    .output_stream    = stdout,
+    .output_format    = TABLE_FMT_BORDERS,
+    .border_type      = TABLE_BORDER_SINGLE,
     .even_col_spacing = false,
-    .cell_padding = 1,
-    .num_cols = 3,  // Required
+    .cell_padding     = 1,
+    .num_cols         = 3, // Required
 };
 
 Table *table = table_init(config);
@@ -79,13 +79,13 @@ Table *table = table_init(config);
 
 | Field            | Type              | Default             | Description                      |
 | ---------------- | ----------------- | ------------------- | -------------------------------- |
-| num_cols         | unsigned int      | Required            | Number of columns in the table   |
 | output_stream    | FILE*             | stdout              | Where to print the table         |
+| cell_padding     | size_t            | 1                   | Spaces inside each cell          |
+| num_cols         | size_t            | Required            | Number of columns in the table   |
 | output_format    | TableOutputFormat | TABLE_FMT_BORDERS   | Table output format              |
-| border_style     | BorderStyle       | TABLE_BORDER_SINGLE | Border drawing style             |
-| even_col_spacing | bool              | false               | Make all columns equal width     |
-| cell_padding     | unsigned int      | 1                   | Spaces inside each cell          |
+| border_type      | TableBorderStyle  | TABLE_BORDER_SINGLE | Border drawing type              |
 | alignment        | TableAlignment    | TABLE_ALIGN_LEFT    | Alignment of table cell contents |
+| even_col_spacing | bool              | false               | Make all columns equal width     |
 
 ### Output Formats
 
@@ -93,13 +93,13 @@ Table *table = table_init(config);
 | ------------------- | ------------------------- |
 | `TABLE_FMT_BORDERS` | Bordered table (default)  |
 | `TABLE_FMT_CSV`     | Comma-separated values    |
-| `TABLE_FMT_SPACE`  | Space-aligned columns     |
+| `TABLE_FMT_SPACE`   | Space-aligned columns     |
 | `TABLE_FMT_PIPE`    | Pipe-delimited (Markdown) |
 
 ### Border Styles
 
 | Style                 | Example |
-| -------------------- -| ------- |
+| --------------------  | ------- |
 | `TABLE_BORDER_SINGLE` | `┌─┬─┐` |
 | `TABLE_BORDER_DOUBLE` | `╔═╦═╗` |
 | `TABLE_BORDER_ROUND`  | `╭─┬─╮` |

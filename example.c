@@ -16,7 +16,7 @@ int main(void)
 
     printf("\n=== %s ===\n", "Double Border & Rich Styling");
     {
-        Table *table = table_create(.num_cols = 3, .border_style = TABLE_BORDER_DOUBLE);
+        Table *table = table_create(.num_cols = 3, .border_type = TABLE_BORDER_DOUBLE);
         table_row(table, TABLE_BOLD TABLE_UNDERLINE "Server" TABLE_RESET,
                          TABLE_BOLD TABLE_UNDERLINE "Uptime" TABLE_RESET,
                          TABLE_BOLD TABLE_UNDERLINE "Status" TABLE_RESET);
@@ -32,7 +32,7 @@ int main(void)
     {
         Table *table = table_create(
             .num_cols = 4,
-            .border_style = TABLE_BORDER_ROUND,
+            .border_type = TABLE_BORDER_ROUND,
             .even_col_spacing = true
         );
         table_row(table, "Q1", "Q2", "Q3", "Q4");
@@ -48,7 +48,7 @@ int main(void)
             .num_cols = 3,
             .output_stream = stdout,
             .output_format = TABLE_FMT_BORDERS,
-            .border_style = TABLE_BORDER_DOUBLE,
+            .border_type = TABLE_BORDER_DOUBLE,
         };
         Table *table = table_init(config);
         table_row(table, "Language", "Creator", "Year");
@@ -78,7 +78,7 @@ int main(void)
     {
         Table *table = table_create(
             .num_cols = 3,
-            .border_style = TABLE_BORDER_ASCII,
+            .border_type = TABLE_BORDER_ASCII,
             .alignment = TABLE_ALIGN_CENTRE
         );
         table_row(table, "Home", "vs", "Away");

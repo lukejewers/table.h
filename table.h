@@ -24,7 +24,7 @@ typedef enum {
     TABLE_BORDER_ROUND,    /* Rounded border: ╭────╮ */
     TABLE_BORDER_ASCII,    /* Ascii border:   +----+ */
     TABLE_BORDER_PIPE,     /* Pipe border:    | -- | */
-} TableBorderStyle;
+} TableBorderType;
 
 typedef enum {
     TABLE_ALIGN_LEFT,
@@ -34,12 +34,12 @@ typedef enum {
 
 typedef struct {
     FILE *output_stream;
-    TableOutputFormat output_format;
-    TableBorderStyle border_style;
-    TableAlignment alignment;
-    bool even_col_spacing;
     size_t cell_padding;
     size_t num_cols;
+    TableOutputFormat output_format;
+    TableBorderType border_type;
+    TableAlignment alignment;
+    bool even_col_spacing;
 } TableConfig;
 
 typedef struct {
@@ -195,10 +195,10 @@ static inline void table__print_csv(const Table *table)
     }
 }
 
-static inline size_t table__get_border_style(const Table *table)
+static inline size_t table__get_border_type(const Table *table)
 {
     if (table->config.output_format == TABLE_FMT_PIPE) return TABLE_BORDER_PIPE;
-    return table->config.border_style < 5 ? table->config.border_style : 0;
+    return table->config.border_type < 5 ? table->config.border_type : 0;
 }
 
 static inline void table__print_border_line(const Table *table, size_t *col_widths, size_t style, Table__BorderChar left, Table__BorderChar centre, Table__BorderChar right)
@@ -249,7 +249,7 @@ static inline void table__print_bordered(const Table *table)
     if (!col_widths) return;
     table__calc_col_widths(table, col_widths);
 
-    size_t style = table__get_border_style(table);
+    size_t style = table__get_border_type(table);
 
     if (table->config.output_format != TABLE_FMT_PIPE) {
         table__print_border_line(table, col_widths, style, TABLE__BORDER_TOP_LEFT, TABLE__BORDER_TOP_MIDDLE, TABLE__BORDER_TOP_RIGHT);
