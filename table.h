@@ -19,11 +19,11 @@ typedef enum {
 } TableOutputFormat;
 
 typedef enum {
-    TABLE_BORDER_SINGLE,   /* Single border:  ┌────┐ */
-    TABLE_BORDER_DOUBLE,   /* Double border:  ╔════╗ */
-    TABLE_BORDER_ROUND,    /* Rounded border: ╭────╮ */
-    TABLE_BORDER_ASCII,    /* Ascii border:   +----+ */
-    TABLE_BORDER_PIPE,     /* Pipe border:    | -- | */
+    TABLE_BORDER_SINGLE,   /* Single border:  ┌─────┐ */
+    TABLE_BORDER_DOUBLE,   /* Double border:  ╔═════╗ */
+    TABLE_BORDER_ROUND,    /* Rounded border: ╭─────╮ */
+    TABLE_BORDER_ASCII,    /* Ascii border:   +-----+ */
+    TABLE_BORDER_PIPE,     /* Pipe border:    | --- | */
 } TableBorderType;
 
 typedef enum {
@@ -34,6 +34,7 @@ typedef enum {
 
 typedef struct {
     FILE *output_stream;
+    const char *header_style;
     size_t cell_padding;
     size_t num_cols;
     TableOutputFormat output_format;
@@ -66,7 +67,7 @@ typedef struct {
 // Convenience macro
 #define TABLE_CELL_STYLE(style, text) style text TABLE_RESET
 
-// Text Styles
+// Text styles
 #define TABLE_BOLD      "\033[1m"
 #define TABLE_ITALIC    "\033[3m"
 #define TABLE_UNDERLINE "\033[4m"
@@ -80,7 +81,6 @@ typedef struct {
 #define TABLE_MAGENTA   "\033[35m"
 #define TABLE_CYAN      "\033[36m"
 #define TABLE_WHITE     "\033[37m"
-
 
 /*
 ** Internal types and data
@@ -264,7 +264,13 @@ static inline void table__print_bordered(const Table *table)
             size_t total_cell_width = col_widths[col] + (table->config.cell_padding * padding_multiplier);
             Table__CellPadding cell_padding = table__get_cell_padding(table, total_cell_width, content_len);
             for (size_t i = 0; i < cell_padding.left; ++i) fputc(' ', table->config.output_stream);
-            fputs(table->row_data[row * table->config.num_cols + col], table->config.output_stream);
+
+            const char *content = table->row_data[row * table->config.num_cols + col];
+            const char* ansi_start = (row == 0) ? (table->config.header_style ? table->config.header_style : "") : "";
+            const char* ansi_end = (row == 0 && table->config.header_style) ? TABLE_RESET : "";
+
+            fprintf(table->config.output_stream, "%s%s%s", ansi_start, content, ansi_end);
+
             for (size_t i = 0; i < cell_padding.right; ++i) fputc(' ', table->config.output_stream);
             fputs(TABLE__BORDER_SETS[style][TABLE__BORDER_VERTICAL], table->config.output_stream);
         }

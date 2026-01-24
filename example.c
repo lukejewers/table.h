@@ -3,6 +3,7 @@
 
 int main(void)
 {
+
     printf("\n=== %s ===\n", "Single Border (Default)");
     {
         Table *table = table_create(.num_cols = 3);
@@ -14,7 +15,7 @@ int main(void)
         table_free(table);
     }
 
-    printf("\n=== %s ===\n", "Grid Lines (Full Separators)");
+    printf("\n=== %s ===\n", "Grid Lines");
     {
         Table *table = table_create(.num_cols = 3, .grid_lines = true);
 
@@ -36,6 +37,21 @@ int main(void)
         table_row(table, "US-East-1", "142 days", TABLE_CELL_STYLE(TABLE_GREEN, "OPERATIONAL"));
         table_row(table, "EU-Central-1", "12 hours", TABLE_CELL_STYLE(TABLE_YELLOW, "DEGRADED"));
         table_row(table, "AP-South-1", "0 days", TABLE_CELL_STYLE(TABLE_RED, "OFFLINE"));
+
+        table_print(table);
+        table_free(table);
+    }
+
+    printf("\n=== %s ===\n", "Header Styling");
+    {
+        Table *table = table_create(
+            .num_cols = 3,
+            .header_style = TABLE_BOLD TABLE_GREEN);
+
+        table_row(table, "ID", "Library", "License");
+        table_row(table, "001", "Table.h", "MIT");
+        table_row(table, "002", "Zlib", "Zlib");
+        table_row(table, "003", "SQLite", "Public Domain");
 
         table_print(table);
         table_free(table);
