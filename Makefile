@@ -1,7 +1,7 @@
 CC     := gcc
 SRC    := example.c
 TARGET := example
-CFLAGS := -Wall -Wextra -g
+CFLAGS := -Wall -Wextra
 
 all: $(TARGET)
 
